@@ -1,0 +1,27 @@
+---
+# tasks file for artifactory
+- name: recuperer la cle artifactory
+  apt_key:
+    url: https://releases.jfrog.io/artifactory/api/gpg/key/public
+
+- name: install deb repository
+  apt_repository:
+    repo: "deb https://releases.jfrog.io/artifactory/artifactory-debs xenial main"
+    state: present
+
+- name: nstall package
+  package:
+    name: jfrog-artifactory-oss
+    state: present
+
+- name: Installation Artifactory
+  apt:
+    name: jfrog-artifactory-oss
+    state: present
+
+- name: start and enable artifactory
+  service:
+    name: artifactory
+    state: started
+    enabled: yes
+

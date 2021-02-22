@@ -1,0 +1,82 @@
+---
+- name: Installation environnement 
+  hosts: prod_env 
+  become: true
+  tasks:
+  - name: Update apt packages
+    apt:
+      update_cache: yes
+
+  - name: Installation OpenJDK
+    apt:
+      name: default-jdk
+      state: present
+
+  - name: Creation d'un groupe tomcat
+    group:
+      name: tomcat
+      state: present
+
+  - name: Creation User tomcat
+    user:
+      name: tomcat
+      group: tomcat
+      createhome: no
+      shell: /bin/false
+      state: present
+      
+  - name: Download Tomcat
+    get_url:
+      url: https://mirrors.ircam.fr/pub/apache/tomcat/tomcat-8/v8.5.63/bin/apache-tomcat-8.5.63.tar.gz
+      dest: /tmp/apache-tomcat-8.5.63.tar.gz
+    retries: 3
+    delay: 10
+  
+  - name: Dezipper le dossier Tomcat 
+    unarchive:   
+      src: /tmp/apache-tomcat-8.5.63.tar.gz
+      dest: /opt/
+      owner: tomcat
+      group: tomcat
+      copy: no
+
+  - name: Remove Tomcat archive
+    file:
+      path: /tmp/apache-tomcat-8.5.63.tar.gz
+      state: absent
+
+  - name: Creation systemd service
+    template:
+      src: tomcat.service.j2
+      dest: /etc/systemd/system/tomcat.service
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Reload systemd
+    systemd:
+      daemon_reload: yes
+                                  
+  - name: start tomcat service
+    service:
+      name: tomcat
+      state: started
+      enabled: yes
+
+  - name: Set UI access credentials
+    template:
+      src: tomcat-users.xml.j2
+      dest: /opt/apache-tomcat-8.5.63/conf/tomcat-users.xml
+
+  - name: Autorisation acces au Manager et Host Manager apps de n'importe quelle IP
+    template:
+      src: context.xml.j2 
+      dest: "{{ item }}"
+    with_items:
+    - /opt/apache-tomcat-8.5.63/webapps/host-manager/META-INF/context.xml
+    - /opt/apache-tomcat-8.5.63/webapps/manager/META-INF/context.xml
+
+  - name: restart tomcat
+    service:
+      name: tomcat
+      state: restarted

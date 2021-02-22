@@ -1,0 +1,63 @@
+---
+- name: Installation environnement Build
+  hosts: build_env
+  become: true
+  roles:
+  - maven-role
+  - artifactory-role
+
+  tasks:
+  - name: Update apt packages
+    apt: 
+      update_cache: yes
+
+  - name: Installation OpenJDK
+    apt:
+      name: openjdk-8-jdk
+      state: present
+
+  - name: Installation derniere version Maven
+    apt:
+      name: maven
+      state: latest
+  
+  - name: Installation Git
+    apt:
+      name: git
+      state: present
+
+
+  - name: Import cle jenkins
+    apt_key:
+      state: present
+      url: https://jenkins-ci.org/redhat/jenkins-ci.org.key
+
+  - name: Ensure the repo is configured
+    apt_repository:
+      repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+      state: present
+ 
+  - name: Verification Installation jenkins
+    apt:
+      name: jenkins
+      update_cache: yes
+  
+  - name: Ensure jenkins is running
+    service:
+      name: jenkins
+      state: started
+      enabled: yes
+
+  - name: Wait 10sec
+    wait_for: 
+      timeout: 10
+
+  - name: cat jenkins default key
+    shell:
+      cat /var/lib/jenkins/secrets/initialAdminPassword
+    changed_when: false
+    register: jenkinspassword
+
+  - name: montrer le password initial de jenkins
+    debug:
+      var: jenkinspassword.stdout

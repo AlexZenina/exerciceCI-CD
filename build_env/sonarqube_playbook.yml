@@ -1,0 +1,59 @@
+---
+
+- name: Installation SonarQube Environnement Build
+  hosts: build_env
+  become: true
+
+  tasks:
+  - name: Creation d'un groupe systeme Sonar
+    group:
+      name: sonar
+      state: present
+
+  - name: Creation User Sonar
+    user:
+      name: sonar
+      group: sonar
+      createhome: no
+      shell: /bin/false
+      state: present
+
+  - name: Download SonarQube
+    get_url:
+      url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-7.5.zip
+      dest: /tmp/sonarqube.zip
+    retries: 3
+    delay: 10
+
+  - name: Dezipper le dossier Sonar
+    unarchive:
+      src: /tmp/sonarqube.zip
+      dest: /opt/
+      owner: sonar
+      group: sonar
+      copy: no
+
+  - name: Remove SonarQube archive
+    file:
+      path: /tmp/sonarqube.zip
+      state: absent
+
+  - name: Creation systemd service
+    template:
+      src: sonar.service.j2
+      dest: /etc/systemd/system/sonar.service
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Reload systemd
+    systemd:
+      daemon_reload: yes
+
+  - name: Ensure SonarQube is running
+    service:
+      name: sonar
+      state: started
+      enabled: yes
+
+

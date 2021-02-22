@@ -1,0 +1,24 @@
+[Unit]
+Description= Tomcat 8.5 service
+After=network.target
+
+[Service]
+Type=forking
+
+User=tomcat
+Group=tomcat
+
+Environment="JAVA_HOME=/usr/lib/jvm/default-java"
+Environment="JAVA_OPTS=-Dfile.encoding=UTF-8 -Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom"
+ 
+Environment="CATALINA_BASE=/opt/apache-tomcat-8.5.63"
+Environment="CATALINA_HOME=/opt/apache-tomcat-8.5.63"
+Environment="CATALINA_PID=/opt/apache-tomcat-8.5.63/temp/tomcat.pid"
+Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+
+ExecStart=/opt/apache-tomcat-8.5.63/bin/startup.sh start
+ExecStop=/opt/apache-tomcat-8.5.63/bin/shutdown.sh stop
+
+[Install]
+WantedBy=multi-user.target
+

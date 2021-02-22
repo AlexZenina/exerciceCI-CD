@@ -1,0 +1,27 @@
+---
+
+- name: Installation de l'environnement dev
+  hosts: dev_env
+  become: yes
+
+  tasks:
+  - name: Update apt packages
+    apt:
+      update_cache: yes
+  
+  - name: Installation OpenJDK
+    apt: 
+      name: openjdk-8-jdk
+      state: present
+
+  - name: Installation Maven derniere version
+    apt:
+      name: maven
+      state: latest
+
+  - name: Installation Git
+    apt:
+      name: git
+      state: present
+
+

@@ -1,0 +1,5 @@
+---
+# defaults file for maven-role
+maven_version: 3.6.3
+maven_home_parent_directory: /opt
+maven_env_file: "/etc/profile.d/maven.sh"
