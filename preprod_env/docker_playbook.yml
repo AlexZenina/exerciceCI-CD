@@ -30,3 +30,14 @@
     apt:
       update_cache: yes
       name: docker-ce
+
+  - name: Ensure docker users are added to the docker group.
+    user:
+      name: vagrant
+      groups: docker
+      append: true
+
+  - name: restart pour la prise en compte des modifications de l'utilisateur POSE QUESTION
+    service:
+      name: docker
+      state: restarted
